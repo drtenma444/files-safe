@@ -89,28 +89,37 @@ export default function Dashboard({ user, setUser }) {
   }
 
   const handleLogout = () => {
+    // Clear both storages
+    localStorage.removeItem('user')
+    localStorage.removeItem('user_expiry')
     sessionStorage.removeItem('user')
     setUser(null)
     navigate('/login')
   }
 
+  const formatSize = (bytes) => {
+    if (bytes < 1024) return bytes + ' B'
+    else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+    else return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow p-4 flex justify-between items-center">
-        <h1 className="text-xl font-semibold">File Vault</h1>
+    <div className="min-h-screen bg-gray-900">
+      <header className="bg-gray-800 shadow p-4 flex justify-between items-center">
+        <h1 className="text-xl font-semibold text-white">Files</h1>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">{user?.username}</span>
+          <span className="text-sm text-gray-300">{user?.username}</span>
           <button
             onClick={handleLogout}
-            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
           >
             Logout
           </button>
         </div>
       </header>
 
-      <main className="p-6 max-w-4xl mx-auto">
-        {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
+      <main className="p-4 md:p-6 max-w-4xl mx-auto">
+        {error && <div className="bg-red-900 text-red-200 p-3 rounded mb-4">{error}</div>}
 
         <label className="block mb-6">
           <span className="sr-only">Choose file</span>
@@ -118,59 +127,54 @@ export default function Dashboard({ user, setUser }) {
             type="file"
             onChange={handleUpload}
             disabled={uploading}
-            className="block w-full text-sm text-gray-500
+            className="block w-full text-sm text-gray-300
               file:mr-4 file:py-2 file:px-4
               file:rounded-full file:border-0
               file:text-sm file:font-semibold
-              file:bg-blue-50 file:text-blue-700
-              hover:file:bg-blue-100
+              file:bg-blue-900 file:text-blue-200
+              hover:file:bg-blue-800
               disabled:opacity-50"
           />
         </label>
 
-        {uploading && <p className="text-gray-500">Uploading...</p>}
+        {uploading && <p className="text-gray-400">Uploading...</p>}
 
-        <div className="bg-white rounded shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded</th>
-                <th className="px-6 py-3"></th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {files.map((file) => (
-                <tr key={file.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{file.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{(file.size / 1024).toFixed(1)} KB</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(file.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleDownload(file)}
-                      className="text-blue-600 hover:text-blue-900 mr-3"
-                    >
-                      Download
-                    </button>
-                    <button
-                      onClick={() => handleDelete(file)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {files.length === 0 && (
-                <tr>
-                  <td colSpan="4" className="px-6 py-4 text-center text-gray-500">No files yet</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        {/* Responsive file cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {files.map((file) => (
+            <div key={file.id} className="bg-gray-800 rounded-lg shadow p-4 flex flex-col">
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-white truncate" title={file.name}>
+                  {file.name}
+                </h3>
+                <p className="text-xs text-gray-400 mt-1">
+                  {formatSize(file.size)}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {new Date(file.created_at).toLocaleDateString()}
+                </p>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => handleDownload(file)}
+                  className="flex-1 bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700"
+                >
+                  Download
+                </button>
+                <button
+                  onClick={() => handleDelete(file)}
+                  className="flex-1 bg-red-600 text-white px-3 py-2 rounded text-sm hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+          {files.length === 0 && (
+            <div className="col-span-full text-center text-gray-400 py-8">
+              No files yet
+            </div>
+          )}
         </div>
       </main>
     </div>
