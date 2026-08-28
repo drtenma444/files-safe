@@ -25,7 +25,7 @@ function App() {
       }
     }
 
-    // Check session storage (for session-only)
+    // Check session storage(for session-only)
     const sessionUser = sessionStorage.getItem('user')
     if (sessionUser) {
       setUser(JSON.parse(sessionUser))
